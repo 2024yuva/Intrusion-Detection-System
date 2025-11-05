@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Intrusion Detection System Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s ease;
+            display: block;
+            margin: 0 auto 20px;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(6px);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        canvas {
+            margin-top: 40px;
+        }
+
+        #charts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        #predictionChart,
+        #lineChart {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(6px);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        h2 {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 1.8em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Intrusion Detection System</h1>
+    <button onclick="loadData()">Load Predictions</button>
+
+    <div id="results"></div>
+
+    <div id="charts">
+        <canvas id="predictionChart" width="400" height="200"></canvas>
+        <canvas id="lineChart" width="400" height="200"></canvas>
+    </div>
+
+    <h2>Dataset Preview</h2>
+    <div id="dataset-preview"></div>
+
+    <script>
+        let predictionChart;
+        let lineChart;
+
+        function loadData() {
+            fetch('/predict', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    let html = '<table><tr><th>Timestamp</th><th>Length</th><th>Prediction</th></tr>';
+                    let anomalyCount = 0;
+                    let normalCount = 0;
+                    let timestamps = [];
+                    let lengths = [];
+                    let colors = [];
+
+                    data.forEach(row => {
+                        const predictionText = row.predicted == 1 ? '🚨 Anomaly' : '✅ Normal';
+                        const predictionColor = row.predicted == 1 ? 'red' : 'green';
+                        html += `<tr><td>${row.timestamp}</td><td>${row.length}</td><td style="color: ${predictionColor};">${predictionText}</td></tr>`;
+
+                        if (row.predicted == 1) anomalyCount++;
+                        else normalCount++;
+
+                        timestamps.push(row.timestamp);
+                        lengths.push(row.length);
+                        colors.push(row.predicted == 1 ? 'rgba(255,99,132,0.7)' : 'rgba(75,192,192,0.7)');
+                    });
+
+                    html += '</table>';
+                    document.getElementById('results').innerHTML = html;
+
+                    updateBarChart(anomalyCount, normalCount);
+                    updateLineChart(timestamps, lengths, colors);
+                });
+
+            fetch('/dataset-preview')
+                .then(res => res.json())
+                .then(rows => {
+                    let html = '<table><tr><th>Timestamp</th><th>Length</th><th>Src Port</th><th>Dst Port</th><th>Anomaly</th></tr>';
+                    rows.forEach(row => {
+                        html += `<tr>
+                            <td>${row.timestamp}</td>
+                            <td>${row.length}</td>
+                            <td>${row.src_port}</td>
+                            <td>${row.dst_port}</td>
+                            <td style="color:${row.anomaly == 1 ? 'red' : 'green'};">${row.anomaly}</td>
+                        </tr>`;
+                    });
+                    html += '</table>';
+                    document.getElementById('dataset-preview').innerHTML = html;
+                });
+        }
+
+        function updateBarChart(anomalyCount, normalCount) {
+            const ctx = document.getElementById('predictionChart').getContext('2d');
+            if (predictionChart) predictionChart.destroy();
+
+            predictionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Anomaly', 'Normal'],
+                    datasets: [{
+                        label: 'Traffic Classification',
+                        data: [anomalyCount, normalCount],
+                        backgroundColor: ['rgba(255, 99, 132, 0.7)', 'rgba(75, 192, 192, 0.7)'],
+                        borderColor: ['rgba(255, 99, 132, 1)', 'rgba(75, 192, 192, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateLineChart(timestamps, lengths, colors) {
+            const ctx = document.getElementById('lineChart').getContext('2d');
+            if (lineChart) lineChart.destroy();
+
+            lineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'Packet Length Over Time',
+                        data: lengths,
+                        backgroundColor: colors,
+                        borderColor: 'rgba(255,255,255,0.3)',
+                        borderWidth: 1,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
