@@ -1,151 +1,111 @@
-# Intrusion-Detection-System
-# 🧠 Intrusion Detection System using NSL-KDD Dataset and SVM
 
-This project implements a **Network Intrusion Detection System (IDS)** using the **NSL-KDD dataset** and a **Support Vector Machine (SVM)** model.  
-It analyzes network connection records to classify them as *normal* or *attack*, achieving high accuracy through effective preprocessing and model tuning.
+# Intrusion Detection System (IDS) 
 
----
+## Objective
 
-## 📘 Project Overview
-
-Network intrusion detection is a critical task in cybersecurity, identifying malicious activities within network traffic.  
-This notebook builds an IDS model using the NSL-KDD dataset and evaluates it using multiple SVM kernel functions (linear, polynomial, RBF).
+This project aims to build a real-time Intrusion Detection System (IDS) that monitors network traffic, detects anomalies using machine learning, and presents the results through an interactive and visually intuitive web dashboard. It is designed to help security analysts and developers understand traffic behavior and identify potential threats in a modular, scalable, and user-friendly environment.
 
 ---
 
-## ⚙️ Features
+## Why This Project Exists
 
-- Data preprocessing and feature encoding
-- Training and testing on NSL-KDD dataset
-- Evaluation of SVM classifiers with different kernels
-- Accuracy, confusion matrix, and classification report
-- Visualizations for model performance comparison
+Traditional IDS tools often lack visual clarity and are difficult to customize or extend. This project bridges that gap by combining machine learning with modern web technologies to create a lightweight, interactive dashboard that is both educational and practical. It serves as a foundation for experimenting with anomaly detection models, simulating traffic patterns, and building security analytics tools with real-time feedback.
 
 ---
 
-## 🧾 Dataset
+## Technologies Used
 
-**Dataset:** [NSL-KDD Dataset on Kaggle](https://www.kaggle.com/datasets/hassan06/nslkdd)
-
-### Description:
-The NSL-KDD dataset is a refined version of the classic KDD Cup 1999 dataset, designed to benchmark intrusion detection systems by removing redundant records and balancing class distribution.
-
-### Dataset includes:
-- **41 features** describing each network connection  
-- **Labels:** `normal` or `attack` (DoS, Probe, R2L, U2R)
-
----
-
-## 🧰 Technologies Used
-
-| Category | Library/Tool |
-|-----------|---------------|
-| Language | Python 3.10+ |
-| IDE | Jupyter Notebook / VS Code |
-| Data Handling | pandas, numpy |
-| Machine Learning | scikit-learn (SVC) |
-| Visualization | matplotlib, seaborn |
-| Dataset Source | KaggleHub / Manual download |
+- Python: Core backend logic and data processing
+- Flask: Lightweight web framework for serving the dashboard
+- Pandas & NumPy: Data manipulation and simulation
+- Scikit-learn: Machine learning model (One-Class SVM)
+- HTML/CSS: Frontend structure and styling
+- Chart.js: Interactive bar and line charts for visualizing predictions
+- JavaScript: Dynamic content rendering and API integration
+- Git: Version control and collaboration
 
 ---
 
-## 🧪 Model Workflow
+## Dataset Used
 
-1. **Load Dataset**
-   - Downloaded from Kaggle via `kagglehub` or manual CSV import.
-2. **Preprocessing**
-   - Encode categorical features (`protocol_type`, `service`, `flag`) using `LabelEncoder`
-   - Normalize numerical features using `StandardScaler`
-3. **Model Training**
-   - Tested multiple SVM kernels: `linear`, `poly`, `rbf`
-   - Selected best model based on accuracy and generalization
-4. **Evaluation**
-   - Accuracy Score
-   - Confusion Matrix
-   - Classification Report
+The dataset simulates outbound TCP traffic from a local machine to Google.com (`142.250.190.78`). It includes both normal and anomalous packets, with anomalies injected by spoofing source IPs and increasing packet sizes.
 
----
+### Features
 
-## 📊 Results
+| Column      | Description                                 |
+|-------------|---------------------------------------------|
+| timestamp   | Time when the packet was simulated          |
+| src_ip      | Source IP address (normal or spoofed)       |
+| dst_ip      | Destination IP (Google)                     |
+| protocol    | Protocol used (TCP)                         |
+| length      | Packet size in bytes                        |
+| src_port    | Source port number                          |
+| dst_port    | Destination port (443)                      |
+| anomaly     | Label: 0 = normal, 1 = anomaly              |
 
-| Kernel | Accuracy |
-|:--------|:----------|
-| Linear | ~97% |
-| Polynomial | ~98% |
-| **RBF (Best)** | **99.5%** |
-
-The **RBF kernel SVM** achieved the highest performance with strong detection of both normal and attack traffic classes.
+The dataset is stored in `data/simulated_google_traffic.csv` and is used for both model training and dashboard visualization.
 
 ---
 
-## 📈 Visualizations
+## Dashboard Overview
 
-The notebook includes:
-- Accuracy comparison plots for different kernels  
-- Confusion matrix heatmaps  
-- Classification metrics summary  
+The IDS dashboard provides the following capabilities:
+
+- Prediction Table: Displays the latest traffic records with color-coded anomaly labels.
+- Bar Chart: Shows the count of normal vs. anomalous packets.
+- Line Chart: Visualizes packet length over time, highlighting anomalies.
+- Dataset Preview: Displays a sample of the raw dataset used for inference.
+- Responsive UI: Styled with glassmorphism and designed for clarity and accessibility.
+
+All components are dynamically updated via JavaScript and Flask API routes.
 
 ---
 
-## 🚀 How to Run
+## Setup Instructions
 
-### 1️⃣ Clone the repository
-```bash
-git clone https://github.com/2024yuva/Intrusion-Detection-System.git
-cd intrusion-detection-system
-```
+1. Clone the Repository
+   ```bash
+   git clone https://github.com/your-username/Intrusion-Detection-System.git
+   cd Intrusion-Detection-System
+   ```
 
-###  Create a virtual Environment
-```
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# macOS/Linux
-source venv/bin/activate
-```
-3️⃣ Install dependencies
+2. Create and Activate a Virtual Environment
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-```
-pip install -r requirements.txt
-```
+3. Install Dependencies
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-4️⃣ Run the notebook
-```
-Open the notebook in VS Code or Jupyter:
-```
+4. Run the Application
+   ```bash
+   python app.py
+   ```
+
+5. Open in Browser
+   ```
+   http://localhost:5000
+   ```
+
 ---
 
-Jupyter Notebook "Intrusion Detection System NSL_KDD+SVM.ipynb"
+## Screenshots
 
+> Add screenshots of the dashboard interface, prediction charts, and dataset preview here.
 
-Run all cells to train, test, and evaluate the model.
+---
 
-📂 Project Structure
+## License
+
+This project is licensed under the MIT License.  
+See the [MIT](LICENSE) file for details.
+
+---
+
+## Conclusion
+
+This IDS dashboard demonstrates how machine learning and modern web technologies can be combined to create a practical, extensible, and visually engaging security tool. It is ideal for learning, experimentation, and real-time traffic analysis. Future enhancements may include support for multiple models, live packet capture, and advanced visual analytics.
 ```
-IDS-NSL-KDD/
-│
-├── Intrusion Detection System NSL_KDD+SVM.ipynb    # Main notebook
-├── data/                                           # Dataset folder
-├── models/                                         # Saved model files (optional)
-├── requirements.txt                                # Python dependencies
-└── README.md                                       # Project documentation
-
-```
-
-### Future Enchancement
-Extend model using Deep Learning (CNN, LSTM)
-
-Deploy on cloud (Render / Google Cloud Run)
-
-👩‍💻 Author
-
-Yuvarrunjitha R A
-📧 yuvarrunjithars@gmail.com
-
-💻 GitHub: @2024yuva
-
-🪪 License
-
-This project is licensed under the MIT License.
-Feel free to use, modify, and share for educational and research purposes.
-
