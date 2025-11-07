@@ -1,234 +1,89 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Intrusion Detection System Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI IDS — Light Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="preload" href="/static/js/dashboard.js" as="script">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #fff;
-            color: #333;
-            padding: 30px;
-        }
 
-        h1 {
-            text-align: center;
-            font-size: 2.5em;
-            margin-bottom: 30px;
-        }
-
-        button {
-            background: #4285F4;
-            border: none;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.3s ease;
-            display: block;
-            margin: 0 auto 20px;
-        }
-
-        button:hover {
-            background: #357ae8;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 30px;
-            background: #fff;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        th,
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-            text-align: center;
-        }
-
-        tr:hover {
-            background: #f9f9f9;
-        }
-
-        canvas {
-            margin-top: 40px;
-        }
-
-        #charts {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 40px;
-            justify-content: center;
-            margin-top: 40px;
-        }
-
-        #predictionChart,
-        #lineChart {
-            background: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 48%;
-            /* Adjust as needed */
-        }
-
-        h2 {
-            margin-top: 60px;
-            text-align: center;
-            font-size: 1.8em;
-        }
-    </style>
 </head>
 
 <body>
-    <h1>Intrusion Detection System</h1>
-    <button onclick="loadData()">Load Predictions</button>
+    <header class="topbar">
+        <div style="height:3px;background:linear-gradient(90deg,#00ffc8,#0077ff,#00ffc8);filter:blur(2px);"></div>
 
-    <div id="results"></div>
+        <h1>AI Intrusion Detection Dashboard</h1>
+        <div class="controls">
+            <label class="switch">
+                <input id="autoRefresh" type="checkbox" checked />
+                <span class="slider"></span>
+            </label>
+            <span class="label">Auto Refresh</span>
+            <button id="voiceBtn">Play Voice Alert</button>
+            <span id="lastUpdate" style="margin-left:10px;color:#666;font-size:13px;"></span>
+        </div>
+    </header>
 
-    <div id="charts">
-        <canvas id="predictionChart" width="400" height="200"></canvas>
-        <canvas id="lineChart" width="400" height="200"></canvas>
-    </div>
+    <main class="grid">
+        <section class="card col-2">
+            <div class="card-head">
+                <h2>Anomaly Scores (Live)</h2>
+                <small>AI-driven Isolation Forest predictions</small>
+            </div>
+            <canvas id="ScoreLine"></canvas>
+        </section>
 
-    <h2>Dataset Preview</h2>
-    <div id="dataset-preview"></div>
+        <section class="card">
+            <div class="card-head">
+                <h2>Threat Categories</h2>
+                <small>BERT Zero-shot or Rule-based Classification</small>
+            </div>
+            <canvas id="categoryChart"></canvas>
+        </section>
 
-    <script>
-        let predictionChart;
-        let lineChart;
+        <section class="card">
+            <div class="card-head">
+                <h2>Model Agreement</h2>
+                <small>LSTM AE · Isolation Forest · LOF · SVM</small>
+            </div>
+            <canvas id="agreementBar"></canvas>
+        </section>
 
-        function loadData() {
-            fetch('/predict', { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    let html = '<table><tr><th>Timestamp</th><th>Length</th><th>Prediction</th></tr>';
-                    let anomalyCount = 0;
-                    let normalCount = 0;
-                    let timestamps = [];
-                    let lengths = [];
-                    let colors = [];
+        <section class="card col-2">
+            <div class="card-head">
+                <h2>Explainable AI</h2>
+                <small>Feature impact visualization (SHAP proxy)</small>
+            </div>
+            <div id="xaiList" class="xai-list"></div>
+            <canvas id="xaiBar"></canvas>
+        </section>
 
-                    data.forEach(row => {
-                        const predictionText = row.predicted == 1 ? '🚨 Anomaly' : '✅ Normal';
-                        const predictionColor = row.predicted == 1 ? 'red' : 'green';
-                        html += `<tr><td>${row.timestamp}</td><td>${row.length}</td><td style="color: ${predictionColor};">${predictionText}</td></tr>`;
+        <section class="card col-2">
+            <div class="card-head">
+                <h2>AI Threat Analyst (Gemini)</h2>
+                <small>Gemini summarizes detected patterns</small>
+            </div>
+            <div id="aiSummary" style="padding:12px;font-size:15px;color:#b8fff4;">
+                <em>Loading AI summary...</em>
+            </div>
+        </section>
 
-                        if (row.predicted == 1) anomalyCount++;
-                        else normalCount++;
 
-                        timestamps.push(row.timestamp);
-                        lengths.push(row.length);
-                        colors.push(row.predicted == 1 ? 'rgba(255,99,132,0.7)' : 'rgba(75,192,192,0.7)');
-                    });
+        <section class="card col-2">
+            <div class="card-head">
+                <h2>Predictive Threat Intelligence</h2>
+                <small>IPs likely to attack soon (based on reputation & anomaly)</small>
+            </div>
+            <div id="intelList" class="intel-list">Loading threat data...</div>
+        </section>
 
-                    html += '</table>';
-                    document.getElementById('results').innerHTML = html;
+    </main>
 
-                    updateBarChart(anomalyCount, normalCount);
-                    updateLineChart(timestamps, lengths, colors);
-                });
 
-            fetch('/dataset-preview')
-                .then(res => res.json())
-                .then(rows => {
-                    let html = '<table><tr><th>Timestamp</th><th>Length</th><th>Src Port</th><th>Dst Port</th><th>Anomaly</th></tr>';
-                    rows.forEach(row => {
-                        html += `<tr>
-                            <td>${row.timestamp}</td>
-                            <td>${row.length}</td>
-                            <td>${row.src_port}</td>
-                            <td>${row.dst_port}</td>
-                            <td style="color:${row.anomaly == 1 ? 'red' : 'green'};">${row.anomaly}</td>
-                        </tr>`;
-                    });
-                    html += '</table>';
-                    document.getElementById('dataset-preview').innerHTML = html;
-                });
-        }
-
-        function updateBarChart(anomalyCount, normalCount) {
-            const ctx = document.getElementById('predictionChart').getContext('2d');
-            if (predictionChart) predictionChart.destroy();
-
-            predictionChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Anomaly', 'Normal'],
-                    datasets: [{
-                        label: 'Traffic Classification',
-                        data: [anomalyCount, normalCount],
-                        backgroundColor: ['rgba(255, 99, 132, 0.7)', 'rgba(75, 192, 192, 0.7)'],
-                        borderColor: ['rgba(255, 99, 132, 1)', 'rgba(75, 192, 192, 1)'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 1, color: '#333' }
-                        },
-                        x: {
-                            ticks: { color: '#333' }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#333'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateLineChart(timestamps, lengths, colors) {
-            const ctx = document.getElementById('lineChart').getContext('2d');
-            if (lineChart) lineChart.destroy();
-
-            lineChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: timestamps,
-                    datasets: [{
-                        label: 'Packet Length Over Time',
-                        data: lengths,
-                        backgroundColor: colors,
-                        borderColor: 'rgba(255,255,255,0.3)',
-                        borderWidth: 1,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        },
-                        x: {
-                            ticks: { color: '#333' }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#333'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    </script>
+    <script src="/static/js/dashboard.js"></script>
 </body>
 
 </html>

@@ -1,15 +1,9 @@
-<<<<<<< HEAD
-fastapi
-uvicorn[standard]
+flask
+pandas
+numpy
 scikit-learn
 joblib
-numpy
-pydantic
-=======
-fastapi
-uvicorn[standard]
-scikit-learn
-joblib
-numpy
-pydantic
->>>>>>> 7e6a1ca5583c827b51200c7e92da1d05af68bffe
+gTTS
+torch; platform_system!="Windows"
+transformers
+shap

@@ -1,0 +1,236 @@
+/* 🌌 AI Intrusion Detection Dashboard – Pro SOC Look */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code&display=swap');
+
+:root {
+    --bg-dark: #0d1117;
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --accent: #00ffc8;
+    --accent-glow: rgba(0, 255, 200, 0.3);
+    --text-primary: #e4e6eb;
+    --text-secondary: #a1a1a1;
+    --radius: 14px;
+    --shadow: 0 0 15px rgba(0, 255, 200, 0.08);
+    --glow: 0 0 12px var(--accent);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: "Poppins", sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+header.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    padding: 12px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow);
+}
+
+header h1 {
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+    text-shadow: var(--glow);
+}
+
+header .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+button {
+    background: linear-gradient(135deg, var(--accent), #00aaff);
+    border: none;
+    padding: 6px 14px;
+    color: #000;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: var(--glow);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 20px;
+    padding: 24px;
+}
+
+.card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(16px);
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.6s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent-glow);
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.card-head h2 {
+    color: var(--accent);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.card-head small {
+    color: var(--text-secondary);
+}
+
+/* ✨ Table / Preview */
+.table-wrap {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 12px;
+    overflow-x: auto;
+    font-family: 'Fira Code', monospace;
+    color: var(--text-secondary);
+}
+
+/* 🌈 Intel Section */
+.intel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.intel-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.08);
+    border-left: 4px solid transparent;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: 'Fira Code', monospace;
+    color: var(--text-primary);
+    transform: translateX(-10px);
+    opacity: 0;
+    animation: slideIn 0.5s ease forwards;
+}
+
+.intel-row .ip {
+    color: #a8f1ff;
+}
+
+.intel-row .score {
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 8px;
+}
+
+.score.low {
+    color: #00ff88;
+    background: rgba(0, 255, 136, 0.15);
+    border-left: 4px solid #00ff88;
+}
+
+.score.medium {
+    color: #ffd43b;
+    background: rgba(255, 212, 59, 0.15);
+    border-left: 4px solid #ffd43b;
+}
+
+.score.high {
+    color: #ff4d4d;
+    background: rgba(255, 77, 77, 0.15);
+    border-left: 4px solid #ff4d4d;
+    animation: pulseRed 1.5s infinite;
+}
+
+@keyframes pulseRed {
+    0% {
+        box-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+    }
+
+    100% {
+        box-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 🌐 Footer */
+footer.footer {
+    text-align: center;
+    padding: 12px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+footer.footer small {
+    color: var(--accent);
+}
+
+footer.footer a {
+    color: var(--accent);
+}
+
+footer.footer a:hover {
+    text-decoration: underline;
+}
