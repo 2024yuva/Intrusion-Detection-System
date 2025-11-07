@@ -1,5 +1,6 @@
-from flask import Flask, jsonify, render_template
-from predict import load_default_dataframe, predict_all
+from flask import Flask, render_template, jsonify
+import pandas as pd
+from predict import predict_all, load_default_dataframe
 from gemini_ai import generate_summary
 
 app = Flask(__name__)
@@ -8,23 +9,25 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
-@app.route("/predict-stream")
+@app.route("/predict-stream", methods=["GET"])
 def predict_stream():
     try:
-        df = load_default_dataframe()
+        df = load_default_dataframe().tail(200)
         out = predict_all(df)
-
-        print("=== Predict Stream Called ===")
-        print("Scores:", len(out.get("if", {}).get("scores", [])))
-        print("Categories:", len(out.get("categories", [])))
-        print("Intel:", len(out.get("intel", [])))
-        print("==============================")
-
+        print("📡 Sent Data Snapshot:", {k: type(v) for k, v in out.items()})
         return jsonify(out)
     except Exception as e:
-        print("❌ ERROR in /predict-stream:", e)
-        return jsonify({"error": str(e)}), 500
- 
+        print("❌ ERROR:", e)
+        return jsonify({"error": str(e)})
+
+@app.route("/dataset-preview", methods=["GET"])
+def dataset_preview():
+    try:
+        df = load_default_dataframe().head(20)
+        cols = [c for c in ["timestamp", "length", "src_port", "dst_port", "anomaly"] if c in df.columns]
+        return jsonify(df[cols].to_dict(orient="records"))
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 @app.route("/ai-summary")
 def ai_summary():

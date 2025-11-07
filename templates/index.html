@@ -4,17 +4,13 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AI IDS — Light Dashboard</title>
+    <title>AI IDS — Dashboard</title>
     <link rel="stylesheet" href="/static/css/style.css" />
-    <link rel="preload" href="/static/js/dashboard.js" as="script">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 
 <body>
     <header class="topbar">
-        <div style="height:3px;background:linear-gradient(90deg,#00ffc8,#0077ff,#00ffc8);filter:blur(2px);"></div>
-
         <h1>AI Intrusion Detection Dashboard</h1>
         <div class="controls">
             <label class="switch">
@@ -31,23 +27,20 @@
         <section class="card col-2">
             <div class="card-head">
                 <h2>Anomaly Scores (Live)</h2>
-                <small>AI-driven Isolation Forest predictions</small>
             </div>
-            <canvas id="ScoreLine"></canvas>
+            <canvas id="scoreLine"></canvas>
         </section>
 
         <section class="card">
             <div class="card-head">
                 <h2>Threat Categories</h2>
-                <small>BERT Zero-shot or Rule-based Classification</small>
             </div>
-            <canvas id="categoryChart"></canvas>
+            <canvas id="threatPie"></canvas>
         </section>
 
         <section class="card">
             <div class="card-head">
                 <h2>Model Agreement</h2>
-                <small>LSTM AE · Isolation Forest · LOF · SVM</small>
             </div>
             <canvas id="agreementBar"></canvas>
         </section>
@@ -55,7 +48,6 @@
         <section class="card col-2">
             <div class="card-head">
                 <h2>Explainable AI</h2>
-                <small>Feature impact visualization (SHAP proxy)</small>
             </div>
             <div id="xaiList" class="xai-list"></div>
             <canvas id="xaiBar"></canvas>
@@ -70,16 +62,6 @@
                 <em>Loading AI summary...</em>
             </div>
         </section>
-
-
-        <section class="card col-2">
-            <div class="card-head">
-                <h2>Predictive Threat Intelligence</h2>
-                <small>IPs likely to attack soon (based on reputation & anomaly)</small>
-            </div>
-            <div id="intelList" class="intel-list">Loading threat data...</div>
-        </section>
-
     </main>
 
 
