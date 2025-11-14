@@ -1,10 +1,12 @@
 let lineChart, pieChart, agreeChart, xaiChart;
 let historyScores = [];
+let heatmapChart;
 
 const scoreCtx = () => document.getElementById("scoreLine").getContext("2d");
 const pieCtx = () => document.getElementById("threatPie").getContext("2d");
 const agreeCtx = () => document.getElementById("agreementBar").getContext("2d");
 const xaiCtx = () => document.getElementById("xaiBar").getContext("2d");
+const heatmapCtx = () => document.getElementById("heatmap").getContext("2d");
 
 function ensureChart(instance, type, ctx, data, options) {
     if (instance) instance.destroy();
@@ -32,6 +34,14 @@ async function refresh() {
         updateThreatPie(out.categories);
         updateAgreement(out);
         updateXAI(out);
+        const heatmapData = [];
+        for (let i = 0; i < 10; i++) {
+            for (let j = 0; j < 10; j++) {
+                heatmapData.push({ x: i, y: j, v: Math.random() * 100 });
+            }
+        }
+        out.heatmap = heatmapData;
+        updateHeatmap(out.heatmap);
 
         const timeEl = document.getElementById("lastUpdate");
         if (timeEl) timeEl.textContent = "Last update: " + new Date().toLocaleTimeString();
@@ -100,6 +110,43 @@ async function loadGeminiSummary() {
         document.getElementById("aiSummary").innerHTML = "Failed to load AI summary.";
     }
 }
+// === Heatmap Update Function ===
+function updateHeatmap(data) {
+  const maxValue = Math.max(...data.map(d => d.v));
+  
+  heatmapChart = ensureChart(
+    heatmapChart,
+    "matrix",
+    heatmapCtx(),
+    {
+      datasets: [{
+        label: "Density Heatmap",
+        data: data,
+        backgroundColor: ctx => {
+          const value = ctx.raw.v;
+          if (value > maxValue * 0.6) return "rgba(255,60,60,0.9)";   // 🔴 hotspots
+          if (value > maxValue * 0.3) return "rgba(255,180,0,0.9)";  // 🟡 mid
+          return "rgba(0,255,157,0.6)";                             // 🟢 normal zone
+        },
+        width: () => 16,
+        height: () => 16,
+      }]
+    },
+    {
+      scales: {
+        x: {
+          ticks: { color: "#aaa" },
+          grid: { display: false }
+        },
+        y: {
+          ticks: { color: "#aaa" },
+          grid: { display: false }
+        }
+      }
+    }
+  );
+}
+
 
 // === Init Dashboard ===
 toggleAuto(true);
