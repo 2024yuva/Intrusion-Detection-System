@@ -43,15 +43,68 @@ header.topbar {
 header h1 {
     font-weight: 600;
     font-size: 1.3rem;
-    color: var(--accent);
+    color: var(--text-primary);
     letter-spacing: 0.5px;
-    text-shadow: var(--glow);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 header .controls {
     display: flex;
     gap: 12px;
     align-items: center;
+}
+
+header .label {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+/* Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color: var(--accent);
+}
+
+input:checked+.slider:before {
+    transform: translateX(24px);
 }
 
 button {
@@ -72,7 +125,7 @@ button:hover {
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     padding: 24px;
 }
@@ -86,6 +139,10 @@ button:hover {
     backdrop-filter: blur(16px);
     transition: all 0.3s ease;
     animation: fadeInUp 0.6s ease;
+}
+
+.card.col-2 {
+    grid-column: span 2;
 }
 
 .card:hover {
@@ -102,13 +159,85 @@ button:hover {
 }
 
 .card-head h2 {
-    color: var(--accent);
+    color: var(--text-primary);
     font-size: 1.1rem;
     font-weight: 600;
 }
 
 .card-head small {
     color: var(--text-secondary);
+}
+
+/* Statistics Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 8px 0;
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    color: var(--text-primary);
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.stat-value.anomaly {
+    color: #ef4444;
+}
+
+.stat-value.normal {
+    color: #10b981;
+}
+
+.stat-value.warning {
+    color: #f59e0b;
+}
+
+/* Alert Status */
+.alert-status {
+    padding: 12px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.alert-status p {
+    margin: 8px 0;
+    color: var(--text-primary);
+}
+
+.alert-status strong {
+    color: var(--accent);
+}
+
+.recent-alerts {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.alert-item {
+    padding: 8px 12px;
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 3px solid #ef4444;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    color: var(--text-primary);
 }
 
 /* ✨ Table / Preview */
@@ -233,4 +362,21 @@ footer.footer a {
 
 footer.footer a:hover {
     text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card.col-2 {
+        grid-column: span 1;
+    }
 }

@@ -1,9 +1,22 @@
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import IsolationForest
+import joblib
+import os
 from xai import explain_scores
 
 DATA_PATH = "data/simulated_google_traffic.csv"
+MODEL_DIR = "models"
+
+def load_models():
+    """Load trained models and scaler"""
+    try:
+        svm = joblib.load(os.path.join(MODEL_DIR, 'model_svm.pkl'))
+        iforest = joblib.load(os.path.join(MODEL_DIR, 'model_if.pkl'))
+        scaler = joblib.load(os.path.join(MODEL_DIR, 'scaler.pkl'))
+        return svm, iforest, scaler
+    except Exception as e:
+        print(f"⚠️ Error loading models: {e}")
+        return None, None, None
 
 
 def load_default_dataframe():
@@ -35,13 +48,51 @@ def predict_all(df):
 
     # ----- FEATURE EXTRACTION -----
     feat_cols = [c for c in df.columns if c not in ["timestamp"]]
-    X = df[feat_cols].values
+    # Ensure we use the same columns as training
+    train_cols = ['src_port', 'dst_port', 'length']
+    available_cols = [c for c in train_cols if c in df.columns]
+    
+    if not available_cols:
+        return {}
+        
+    X = df[available_cols].values
+    
+    # Load models
+    svm, iforest, scaler = load_models()
+    
+    if svm is None or iforest is None:
+        # Fallback if models not found
+        return {"error": "Models not loaded"}
 
-    # ----- ISOLATION FOREST -----
-    iforest = IsolationForest(n_estimators=100, contamination=0.05, random_state=42)
-    iforest.fit(X)
-    scores = -iforest.score_samples(X)
-    preds = (scores > np.percentile(scores, 95)).astype(int)
+    # Scale features
+    X_scaled = scaler.transform(X)
+
+    # ----- ENSEMBLE PREDICTION (SOFT VOTING) -----
+    # Get decision function scores (higher is better/normal)
+    # SVM: positive for inliers, negative for outliers
+    score_svm = svm.decision_function(X_scaled)
+    
+    # Isolation Forest: positive for inliers, negative for outliers
+    score_if = iforest.decision_function(X_scaled)
+    
+    # Normalize scores to 0-1 range (approximate) for combination
+    # Sigmoid function to map (-inf, inf) to (0, 1)
+    def sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+    
+    prob_svm = sigmoid(score_svm)
+    prob_if = sigmoid(score_if)
+    
+    # Combined score (Average)
+    combined_score = (prob_svm + prob_if) / 2
+    
+    # Threshold for anomaly (0.5 is the decision boundary for sigmoid)
+    # If combined probability < 0.5, it's an anomaly (1), else normal (0)
+    preds = (combined_score < 0.5).astype(int)
+    
+    # Invert scores for visualization (higher = more anomalous)
+    # We want 0 to 1, where 1 is high anomaly score
+    vis_scores = 1 - combined_score
 
     # ----- RANDOM CATEGORY LABELS -----
     possible_threats = ["DDoS", "SQL Injection", "Brute Force", "Normal"]
@@ -54,7 +105,8 @@ def predict_all(df):
         })
 
     # ----- XAI -----
-    xai = explain_scores("if", X, scores)
+    # Use SVM for explanation as it's distance-based and intuitive
+    xai = explain_scores("svm", X_scaled, vis_scores)
 
     # ====================================================
     # 🔥 DENSITY HEATMAP (src_port vs length)
@@ -86,17 +138,44 @@ def predict_all(df):
     normal_vals = df.loc[preds == 0, "length"].tolist()
     anomaly_vals = df.loc[preds == 1, "length"].tolist()
 
+    # Get individual model predictions
+    pred_svm = (prob_svm < 0.5).astype(int)
+    pred_if = (prob_if < 0.5).astype(int)
+    
+    # Calculate agreement percentage
+    agreement = np.mean(pred_svm == pred_if) * 100
+    
+    # Calculate statistics
+    total_packets = len(preds)
+    anomaly_count = int(np.sum(preds))
+    normal_count = total_packets - anomaly_count
+    anomaly_percentage = (anomaly_count / total_packets * 100) if total_packets > 0 else 0
+
     # ====================================================
     # FINAL RETURN
     # ====================================================
     return {
-        "if": {"scores": scores.tolist(), "labels": preds.tolist()},
+        "if": {"scores": vis_scores.tolist(), "labels": preds.tolist()},
         "normal": normal_vals,
         "anomaly": anomaly_vals,
         "categories": categories,
         "xai_proxy": xai,
-        "features": feat_cols,
-        "heatmap": heatmap_data
+        "features": available_cols,
+        "heatmap": heatmap_data,
+        # NEW: Individual model predictions
+        "model_predictions": {
+            "svm": pred_svm.tolist(),
+            "isolation_forest": pred_if.tolist(),
+            "ensemble": preds.tolist(),
+            "agreement_percentage": round(agreement, 2)
+        },
+        # NEW: Statistics
+        "statistics": {
+            "total_packets": total_packets,
+            "anomaly_count": anomaly_count,
+            "normal_count": normal_count,
+            "anomaly_percentage": round(anomaly_percentage, 2)
+        }
     }
 
 
