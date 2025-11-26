@@ -8,3 +8,4 @@ torch; platform_system!="Windows"
 transformers
 shap
 google-generativeai
+python-dotenv

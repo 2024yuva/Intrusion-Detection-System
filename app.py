@@ -3,9 +3,12 @@ import pandas as pd
 from predict import predict_all, load_default_dataframe
 from gemini_ai import generate_summary
 from utils.alerts import send_email_alert, get_alert_status
+from utils.path_utils import get_resource_path
 from datetime import datetime
 
-app = Flask(__name__)
+app = Flask(__name__, 
+            template_folder=get_resource_path('templates'),
+            static_folder=get_resource_path('static'))
 
 # Alert cooldown tracking
 last_alert_time = None

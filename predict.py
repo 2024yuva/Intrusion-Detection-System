@@ -3,9 +3,10 @@ import numpy as np
 import joblib
 import os
 from xai import explain_scores
+from utils.path_utils import get_resource_path
 
-DATA_PATH = "data/simulated_google_traffic.csv"
-MODEL_DIR = "models"
+DATA_PATH = get_resource_path("data/simulated_google_traffic.csv")
+MODEL_DIR = get_resource_path("models")
 
 def load_models():
     """Load trained models and scaler"""
